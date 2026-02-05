@@ -87,3 +87,32 @@ function requireGame(): void {
         jsonResponse(['ok' => false, 'error' => 'No active game']);
     }
 }
+
+function applyShot(&$side, $idx) {
+    foreach ($side['ships'] as &$ship) {
+        $pos = array_search($idx, $ship, true);
+        if ($pos !== false) {
+            unset($ship[$pos]);
+            $ship = array_values($ship);
+            return [
+                'hit' => true,
+                'sunk' => count($ship) === 0
+            ];
+        }
+    }
+
+    return [
+        'hit' => false,
+        'sunk' => false
+    ];
+}
+
+function allSunk($ships) {
+    foreach ($ships as $ship) {
+        if (count($ship) > 0) {
+            return false;
+        }
+    }
+    return true;
+}
+
