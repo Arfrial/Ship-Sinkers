@@ -1,21 +1,14 @@
 ## Ship Sinkers ##
 
-A locally hosted Battleship-esque game built with vanilla HTML, CSS, PHP, and JavaScript.
-The game features a polished UI, multiple visual themes, and a server-authoritative backend that enforces all gameplay rules.
+## Iteration 1 ##
+The initial version I had made of Ship Sinkers was implemented entirely on the client side using HTML, CSS, and JavaScript. All of my game logic, ship placement, hit detection, and win/loss conditions were handled locally in the browser, and I still have that version listed in another repo.
 
-## Features ##
-- Classic battleship gameplay on a 10x10 grid
-- Multiple visual styles (Navy, Sonar, Neon)
-- Visually appealing UI, Terminal-style feedback, Animated grid effects, stats after match.
-- Difficulty-based AI with hunt logic.
+## Iteration 2 ##
+Another iteration I had added introduced a difficulty-based enemy AI that uses a hunt logic. I have 4 different difficulty settings, ranging from choosing the shots randomly, all the way up to never missing a shot. It does this by analyzing the previous hit to search the adjacent cells and locking the orientation if needed, and will finish off ships on greater difficulties. This iteration significantly improved gameplay in my opinion and added a more fun experience for the user.
 
-## How To Run Locally ##
-1. Place the project folder directly inside your XAMPP 'htdocs' directory (C:\xampp\htdocs\ship-sinkers)
-2. Start Apache from the XAMPP control panel
-3. Open a browser and navigate to: http://localhost/ship-sinkers/
-4. Play!
+## Limitations ##
 
-## Controls ##
-- Click to place ships & fire shots.
-- Use 'R' to rotate ships during the placement phase.
-- Use the settings menu to change themes and control audio.
+- The game is only currently single-player and does not have support for multiplayer.
+- The project was initially designed to run locally and is not configured for public use.
+- Refreshing the browser while in-game resets the game.
+- The enemy AI logic runs on the client and does not have memory of past games.
