@@ -529,4 +529,5 @@ resetBtn.onclick = () => location.reload();
 
 /* ---------- INITIAL GRIDS (empty) ---------- */
 createGrid(playerGrid, null, false);
-createGrid(enemyGrid, null, false);
+createGrid(enemyGrid, fireAtEnemy, false);
+enemyGrid.classList.add("disabled");
