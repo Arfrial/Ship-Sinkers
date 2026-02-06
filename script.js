@@ -323,6 +323,7 @@ startBtn.onclick = () => {
 
 /* ---------- PLAYER FIRE ---------- */
 async function fireAtEnemy(e) {
+  console.log("fireAtEnemy fired", e.target);
 
   if (!battleStarted || !playerTurn) return;
 
@@ -363,20 +364,21 @@ async function fireAtEnemy(e) {
 
 
 /* ---------- ENEMY AI ---------- */
+/* ---------- ENEMY AI ---------- */
 function pickEnemyShot() {
-
-  // IMPOSSIBLE — cheat
+  // IMPOSSIBLE — cheat, but pick a NEW ship cell each time
   if (difficulty === "impossible") {
-    return Number(playerShips.flat()[0]);
+    const shipCells = playerShips.flat().map(Number);
+    const remaining = shipCells.filter(idx => !enemyShots.has(idx));
+    // If somehow empty, fall back to any remaining cell
+    if (remaining.length > 0) return remaining[0];
   }
 
   // MEDIUM & HARD — MUST exhaust huntQueue first
-  if ((difficulty === "medium" || difficulty === "hard")) {
+  if (difficulty === "medium" || difficulty === "hard") {
     while (huntQueue.length > 0) {
       const next = huntQueue.shift();
-      if (!enemyShots.has(next)) {
-        return next;
-      }
+      if (!enemyShots.has(next)) return next;
     }
   }
 
@@ -390,6 +392,8 @@ function pickEnemyShot() {
 }
 
 
+
+/* ---------- ENEMY TURN ---------- */
 /* ---------- ENEMY TURN ---------- */
 async function enemyTurn() {
   if (!battleStarted) return;
@@ -397,10 +401,19 @@ async function enemyTurn() {
   turnCount++;
 
   const shot = pickEnemyShot();
-  enemyShots.add(shot);
 
   const res = await api("enemy_fire.php", { index: shot });
-  if (!res.ok) return;
+
+  // ✅ If server rejects, do NOT deadlock the game
+  if (!res.ok) {
+    playerTurn = true;
+    turnText.textContent = "YOUR TURN";
+    typeStatus("Your move, Captain.");
+    return;
+  }
+
+  // ✅ Only record the shot after server accepts it
+  enemyShots.add(shot);
 
   const cell = playerGrid.children[shot];
 
@@ -416,7 +429,8 @@ async function enemyTurn() {
 
     huntHits.push(shot);
 
-    if (difficulty === "medium" || difficulty === "hard") {
+    // ✅ Include impossible in hunt behavior (same as hard/medium)
+    if (difficulty === "medium" || difficulty === "hard" || difficulty === "impossible") {
       getNeighbors(shot).forEach(n => {
         if (!enemyShots.has(n) && !huntQueue.includes(n)) {
           huntQueue.push(n);
@@ -424,7 +438,8 @@ async function enemyTurn() {
       });
     }
 
-    if (difficulty === "hard" && huntHits.length >= 2 && !huntOrientation) {
+    // ✅ Include impossible in hard-orientation logic
+    if ((difficulty === "hard" || difficulty === "impossible") && huntHits.length >= 2 && !huntOrientation) {
       for (let i = 0; i < huntHits.length; i++) {
         for (let j = i + 1; j < huntHits.length; j++) {
           const a = huntHits[i], b = huntHits[j];
@@ -440,7 +455,7 @@ async function enemyTurn() {
       }
     }
 
-    if (difficulty === "hard" && huntOrientation) {
+    if ((difficulty === "hard" || difficulty === "impossible") && huntOrientation) {
       huntQueue = [];
 
       const sorted = [...huntHits].sort((x, y) => x - y);
@@ -468,7 +483,6 @@ async function enemyTurn() {
       }
     }
 
-    // IMPORTANT: use SERVER sunk signal
     if (res.sunk) {
       huntQueue = [];
       huntHits = [];
@@ -480,7 +494,6 @@ async function enemyTurn() {
     playSound("miss", true);
   }
 
-  // SERVER decides game over
   if (res.gameOver) {
     endGame(false);
     return;
@@ -490,6 +503,7 @@ async function enemyTurn() {
   turnText.textContent = "YOUR TURN";
   typeStatus("Your move, Captain.");
 }
+
 
 
 
